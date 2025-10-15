@@ -28,3 +28,6 @@ class Deck(db.Model):
     creation_at = db.Column(
         db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
+    cards = db.relationship(
+        "Card", backref="deck", lazy=True, cascade="all, delete-orphan"
+    )
