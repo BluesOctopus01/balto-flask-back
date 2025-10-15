@@ -1,0 +1,13 @@
+# Environnement virtuel
+venv/
+
+# Fichiers système
+__pycache__/
+*.pyc
+
+# Fichiers de configuration sensibles
+.env
+
+# Fichiers temporaires
+*.log
+*.sqlite3
