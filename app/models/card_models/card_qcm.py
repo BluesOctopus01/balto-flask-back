@@ -1,5 +1,5 @@
 from app.models import db
-from .card import Card
+from .card_base import Card
 
 
 class Qcm(Card):
