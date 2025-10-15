@@ -27,5 +27,12 @@ def create_app():
     CORS(app)
 
     # TODO model, route, register
+    from app.models.user import User
+    from app.models.deck import Deck
+    from app.models.card_models.card_qcm import Qcm, Card
+    from app.models.card_models.card_gapfill import Gapfill
+    from app.models.card_models.card_answer_qcm import AnswerQcm
+    from app.models.card_models.card_image import Image
+    from app.models.card_models.card_qa import Qa
 
     return app
