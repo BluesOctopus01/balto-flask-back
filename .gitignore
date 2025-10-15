@@ -2,11 +2,11 @@
 venv/
 
 # Fichiers système
-__pycache__/
+__pycache__/*
 *.pyc
 
 # Fichiers de configuration sensibles
-.env
+*.env
 
 # Fichiers temporaires
 *.log
