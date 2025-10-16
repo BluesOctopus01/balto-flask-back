@@ -38,9 +38,6 @@ def authenticate_controller(email, password):
     return None
 
 
-# unlog ?
-
-
 def get_user_by_id_controller(user_id):
     user = User.query.get(user_id)
     if user:

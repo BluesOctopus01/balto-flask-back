@@ -43,15 +43,14 @@ def get_deck_by_user_controller(user_id):
     return None
 
 
-def update_deck_controller(deck_id, user_id, data):
-
+def update_deck_controller(deck_id, user_id, role, data):
+    # TODO a voir comment fonctionne le token
     deck_to_update = Deck.query.filter_by(id=deck_id).first()
-    user = User.query.filter_by(id=user_id).first()
 
-    if not user or not deck_to_update:
+    if not user_id or not deck_to_update:
         return None
 
-    if user.id == deck_to_update.creator_id or user.role == "admin":
+    if user_id == deck_to_update.creator_id or role == "admin":
 
         deck_to_update.name = data.get("name", deck_to_update.name)
         deck_to_update.bio = data.get("bio", deck_to_update.name)
