@@ -20,8 +20,8 @@ class User(db.Model, UserMixin):
     user_bio = db.Column(db.Text, nullable=True)
     image = db.Column(db.String(200), nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    last_login_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    last_login_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     role = db.Column(db.String(50), default="user")
     is_active = db.Column(db.Boolean, default=True)
