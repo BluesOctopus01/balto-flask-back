@@ -47,19 +47,77 @@ def update_user_controller(user_id, data):
     updated_user = User.query.get(user_id)
     if not updated_user:
         return None
+    updated_user.username = data.get("username", updated_user.username)
+    updated_user.first_name = data.get("first_name", updated_user.first_name)
+    updated_user.last_name = data.get("last_name", updated_user.last_name)
+    updated_user.email = data.get("email", updated_user.email)
+    updated_user.phone_number = data.get("phone_number", updated_user.phone_number)
+    updated_user.address = data.get("address", updated_user.address)
+    updated_user.user_bio = data.get("user_bio", updated_user.user_bio)
+    updated_user.image = data.get("image", updated_user.image)
+    # Ca ne fait pas de sens de pouvoir changer la date de naissance
+    db.session.commit()
+    return updated_user
 
 
-def update_psw_controller():
-    pass
+def update_psw_controller(user_id, new_psw, old_psw):
+    user = User.query.get(user_id)
+    if not user:
+        return None
+    if not check_password_hash(user.password, old_psw):
+        return None
+    try:
+        user.password = generate_password_hash(new_psw)
+        db.session.commit()
+        return True
+    except Exception as e:
+        db.session.rollback()
+        return {"error": f"Database error {str(e)}"}
 
 
-def delete_user_controller():
-    pass
+def deactivate_user_controller(user_id, role):
+    user_to_deactivate = User.query.get(user_id)
+    if not user_to_deactivate:
+        return None
+    if not user_to_deactivate.is_active:
+        return None
+    if role == "admin" or user_id == user_to_deactivate.id:
+        user_to_deactivate.is_active = False
+        db.session.commit()
+        return user_to_deactivate
+
+
+def reactivate_user_controller(user_id, role):
+    user_to_reactivate = User.query.get(user_id)
+    if not user_to_reactivate:
+        return None
+    if not user_to_reactivate.is_active:
+        return None
+    if user_to_reactivate.id == user_id or role == "admin":
+        user_to_reactivate.is_active = True
+        db.session.commit()
+        return user_to_reactivate
 
 
 def get_all_user_controller():
-    pass
+    return User.query.all()
 
 
-def change_user_role_controller():
-    pass
+def change_user_role_controller(user_id, new_role):
+    # Definir les roles autorisés
+    valid_roles = ["user", "admin"]
+
+    if new_role not in valid_roles:
+        return {"error": "Invalid role"}
+
+    user = User.query.get(user_id)
+    if not user:
+        return None
+
+    try:
+        user.role = new_role
+        db.session.commit()
+        return user
+    except Exception as e:
+        db.session.rollback()
+        return {"error": f"Database error {str(e)}"}
