@@ -17,15 +17,15 @@ class Deck(db.Model):
     access = db.Column(db.String(10), default=PUBLIC, nullable=False)
 
     size = db.Column(db.Integer, default=0)
-    creation_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    creation_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     deck_image = db.Column(db.String(200), nullable=True)
 
-    access_key = db.Column(db.String(50), nullable=True)
+    access_key = db.Column(db.String(150), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
 
     creator_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    creation_at = db.Column(
+    last_modification_at = db.Column(
         db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     cards = db.relationship(

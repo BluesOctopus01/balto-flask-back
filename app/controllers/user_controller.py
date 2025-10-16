@@ -1,4 +1,3 @@
-from sqlalchemy import true
 from app.models import db, User
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -39,8 +38,14 @@ def authenticate_controller(email, password):
     return None
 
 
+# unlog ?
+
+
 def get_user_by_id_controller(user_id):
-    return User.query.get(user_id)
+    user = User.query.get(user_id)
+    if user:
+        return user
+    return None
 
 
 def update_user_controller(user_id, data):
