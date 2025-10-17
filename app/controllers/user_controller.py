@@ -20,7 +20,7 @@ def create_user_controller(data):
         email=data["email"],
         phone_number=data["phone_number"],
         birth_date=data["birth_date"],
-        adress=data["adress"],
+        address=data["address"],
         user_bio=data["user_bio"],
         image=data["image"],
     )
@@ -102,14 +102,13 @@ def deactivate_user_controller(user_id):
     if not user_to_deactivate.is_active:
         return {"success": False, "message": "Account already deactivated"}
 
-    if user_id == user_to_deactivate.id:
-        user_to_deactivate.is_active = False
-        db.session.commit()
-        return {
-            "success": True,
-            "message": "Password updated successfully",
-            "user": user_to_deactivate,
-        }
+    user_to_deactivate.is_active = False
+    db.session.commit()
+    return {
+        "success": True,
+        "message": "User account deactivated successfully",
+        "user": user_to_deactivate,
+    }
 
 
 def reactivate_user_controller(user_id):
@@ -161,7 +160,7 @@ def admin_update_user_controller(target_user_id, data):
         user.user_bio = data["user_bio"]
 
     if "image" in data:
-        user.user_bio = data["image"]
+        user.image = data["image"]
 
     db.session.commit()
     return user
@@ -174,5 +173,5 @@ def admin_ban_user_controller(target_user_id):
         return {"success": False, "message": "User not found"}
 
     user_to_ban.is_active = False
-    db.session.commit
+    db.session.commit()
     return {"success": True, "message": "User has been banned"}
