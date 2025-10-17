@@ -163,7 +163,7 @@ def reactivate_user(user_id, role):
 
 
 # --------------------admin--------------------
-@user_bp.route("/admin/user", methods=["GET"])
+@user_bp.route("/admin", methods=["GET"])
 @admin_required
 def admin_get_all_users():
     users = admin_get_all_users_controller()

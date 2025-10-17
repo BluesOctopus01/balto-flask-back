@@ -35,4 +35,8 @@ def create_app():
     from app.models.card_models.card_image import Image
     from app.models.card_models.card_qa import Qa
 
+    from app.routes.user_routes import user_bp
+
+    app.register_blueprint(user_bp)
+
     return app
