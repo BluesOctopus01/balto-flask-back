@@ -3,13 +3,14 @@ from app.controllers.user_controller import (
     create_user_controller,
     authenticate_controller,
     get_user_by_id_controller,
-    get_all_user_controller,
+    admin_get_all_users_controller,
     update_psw_controller,
     update_user_controller,
     reactivate_user_controller,
     deactivate_user_controller,
     admin_change_user_role_controller,
     admin_update_user_controller,
+    admin_ban_user_controller,
 )
 from app.utils.jwt_utils import jwt_required, admin_required, generate_token
 
@@ -42,23 +43,23 @@ def register_user():
 @user_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
+    result = authenticate_controller(data["email"], data["password"])
 
-    user = authenticate_controller(data["email"], data["password"])
-    if not user:
-        return jsonify({"message": "Invalid credentials"}), 401
+    if not result["success"]:
+        return jsonify({"message": result["message"]}), 401
 
+    user = result["user"]
     token = generate_token(user.id, user.role)
+
     return (
         jsonify(
             {
-                "message": "Login succesfull",
-                "user": {
-                    "username": user.username,
-                    "token": token,
-                },
+                "message": "Login successful",
+                "user": {"username": user.username, "token": token},
             }
-        )
-    ), 200
+        ),
+        200,
+    )
 
 
 @user_bp.route("/details", methods=["GET"])
@@ -141,22 +142,55 @@ def update_user_psw(user_id, role):
 @user_bp.route("/deactivate", methods=["POST"])
 @jwt_required
 def deactivate_user(user_id, role):
-    result = deactivate_user_controller(user_id, role)
+    result = deactivate_user_controller(user_id)
+    status_code = 200 if result["success"] else 400
+    return jsonify({"message": result["message"]}), status_code
 
-    status_code = 204 if result["success"] else 400
+
+@user_bp.route("/reactivate", methods=["POST"])
+@jwt_required
+def reactivate_user(user_id, role):
+
+    result = reactivate_user_controller(user_id)
+
+    status_code = 200 if result["success"] else 403
+
+    if result["message"] == "User not found":
+        status_code = 404
+
+    elif result["message"] == "Account is already active":
+        status_code = 400
 
     return jsonify({"message": result["message"]}), status_code
 
 
 # --------------------admin--------------------
-
-
-@user_bp.route("/admin/user/<int:user_id>", methods=["PATCH"])
+@user_bp.route("/admin/user>", methods=["GET"])
 @admin_required
-def admin_update_user(user_id):
+def admin_get_all_users():
+    users = admin_get_all_users_controller()
+    return (
+        jsonify(
+            [
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role,
+                }
+                for user in users
+            ]
+        ),
+        200,
+    )
+
+
+@user_bp.route("/admin/user/<int:target_user_id>", methods=["PATCH"])
+@admin_required
+def admin_update_user(target_user_id):
     data = request.get_json()
 
-    user = admin_update_user_controller(user_id, data)
+    user = admin_update_user_controller(target_user_id, data)
 
     if not user:
         return (jsonify({"message": "user not found"}),)
@@ -172,3 +206,37 @@ def admin_update_user(user_id):
             },
         }
     )
+
+
+@user_bp.route("admin/role/<int:target_user_id>", methods=["PATCH"])
+@admin_required
+def admin_change_role(target_user_id):
+
+    data = request.get_json()
+    if "role" not in data:
+        return jsonify({"message": "Role is required"}), 400
+
+    result = admin_change_user_role_controller(target_user_id, data["role"])
+    return (
+        jsonify(
+            {
+                "message": "User role updated successfully",
+                "user": {
+                    "id": result.id,
+                    "username": result.username,
+                    "new_role": result.role,
+                },
+            }
+        ),
+        200,
+    )
+
+
+@user_bp.route("admin/ban/<int:target_user_id>", methods=["PATCH"])
+@admin_required
+def admin_ban_user(target_user_id):
+    result = admin_ban_user_controller(target_user_id)
+
+    status_code = 204 if result["success"] else 404
+
+    return jsonify({"message": result["message"]}), status_code

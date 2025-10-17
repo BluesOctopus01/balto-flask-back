@@ -25,4 +25,5 @@ class User(db.Model, UserMixin):
 
     role = db.Column(db.String(50), default="user")
     is_active = db.Column(db.Boolean, default=True)
+
     decks = db.relationship("Deck", backref="creator", lazy=True)

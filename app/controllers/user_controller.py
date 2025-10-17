@@ -32,10 +32,21 @@ def create_user_controller(data):
 
 def authenticate_controller(email, password):
     user = User.query.filter_by(email=email).first()
-    if user and check_password_hash(user.password, password):
+
+    if not user:
+        return {"success": False, "message": "Invalid credentials"}
+
+    if not user.is_active:
+        return {
+            "success": False,
+            "message": "Account is deactivated. Please activate it first.",
+        }
+
+    if check_password_hash(user.password, password):
         update_last_login_controller(user)
-        return user
-    return None
+        return {"success": True, "user": user}
+
+    return {"success": False, "message": "Invalid credentials"}
 
 
 def get_user_by_id_controller(user_id):
@@ -82,13 +93,16 @@ def update_psw_controller(user_id, new_psw, old_psw):
         return {"success": False, "message": f"Database error {str(e)}"}
 
 
-def deactivate_user_controller(user_id, role):
+def deactivate_user_controller(user_id):
     user_to_deactivate = User.query.get(user_id)
+
     if not user_to_deactivate:
         return {"success": False, "message": "User not found"}
+
     if not user_to_deactivate.is_active:
         return {"success": False, "message": "Account already deactivated"}
-    if role == "admin" or user_id == user_to_deactivate.id:
+
+    if user_id == user_to_deactivate.id:
         user_to_deactivate.is_active = False
         db.session.commit()
         return {
@@ -98,30 +112,34 @@ def deactivate_user_controller(user_id, role):
         }
 
 
-def reactivate_user_controller(user_id, role):
+def reactivate_user_controller(user_id):
     user_to_reactivate = User.query.get(user_id)
+
     if not user_to_reactivate:
-        return None
-    if not user_to_reactivate.is_active:
-        return None
-    if user_to_reactivate.id == user_id or role == "admin":
+        return {"success": False, "message": "User not found"}
+
+    if user_to_reactivate.is_active:
+        return {"success": False, "message": "Account is already active"}
+
+    if user_to_reactivate.id == user_id:
         user_to_reactivate.is_active = True
         db.session.commit()
-        return user_to_reactivate
+        return {"success": True, "message": "Account activated successfully"}
+
+    return {"success": False, "message": "Not authorized to reactivate this account"}
 
 
-def get_all_user_controller():
+def admin_get_all_users_controller():
     return User.query.all()
 
 
-def admin_change_user_role_controller(user_id, new_role):
-    # Definir les roles autorisés
+def admin_change_user_role_controller(target_user_id, new_role):
     valid_roles = ["user", "admin"]
 
     if new_role not in valid_roles:
         return {"error": "Invalid role"}
 
-    user = User.query.get(user_id)
+    user = User.query.get(target_user_id)
     if not user:
         return None
 
@@ -134,8 +152,8 @@ def admin_change_user_role_controller(user_id, new_role):
         return {"error": f"Database error {str(e)}"}
 
 
-def admin_update_user_controller(user_id, data):
-    user = User.query.get(user_id)
+def admin_update_user_controller(target_user_id, data):
+    user = User.query.get(target_user_id)
     if not user:
         return None
 
@@ -147,3 +165,14 @@ def admin_update_user_controller(user_id, data):
 
     db.session.commit()
     return user
+
+
+def admin_ban_user_controller(target_user_id):
+    user_to_ban = User.query.get(target_user_id)
+
+    if not user_to_ban:
+        return {"success": False, "message": "User not found"}
+
+    user_to_ban.is_active = False
+    db.session.commit
+    return {"success": True, "message": "User has been banned"}
