@@ -105,7 +105,7 @@ def get_all_user_controller():
     return User.query.all()
 
 
-def change_user_role_controller(user_id, new_role):
+def admin_change_user_role_controller(user_id, new_role):
     # Definir les roles autorisés
     valid_roles = ["user", "admin"]
 
@@ -123,3 +123,18 @@ def change_user_role_controller(user_id, new_role):
     except Exception as e:
         db.session.rollback()
         return {"error": f"Database error {str(e)}"}
+
+
+def admin_update_user_controller(user_id, data):
+    user = User.query.get(user_id)
+    if not user:
+        return None
+
+    if "user_bio" in data:
+        user.user_bio = data["user_bio"]
+
+    if "image" in data:
+        user.user_bio = data["image"]
+
+    db.session.commit()
+    return user
