@@ -35,9 +35,8 @@ def register_user():
                     "token": token,
                 },
             }
-        ),
-        201,
-    )
+        )
+    ), 201
 
 
 @user_bp.route("/login", methods=["POST"])
@@ -58,9 +57,8 @@ def login():
                     "token": token,
                 },
             }
-        ),
-        200,
-    )
+        )
+    ), 200
 
 
 @user_bp.route("/details", methods=["GET"])
@@ -71,22 +69,24 @@ def get_user(user_id, role):
 
     if not user:
         return jsonify({"message": "User not found"}), 404
-    return jsonify(
-        {
-            "message": "User updated",
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-                "email": user.email,
-                "user_bio": user.user_bio,
-                "image": user.image,
-                "created_at": user.created_at,
-                "last_login_at": user.last_login_at,
-                "role": user.role,
-            },
-        },
+    return (
+        jsonify(
+            {
+                "message": "User updated",
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "first_name": user.first_name,
+                    "last_name": user.last_name,
+                    "email": user.email,
+                    "user_bio": user.user_bio,
+                    "image": user.image,
+                    "created_at": user.created_at,
+                    "last_login_at": user.last_login_at,
+                    "role": user.role,
+                },
+            }
+        ),
         200,
     )
 
@@ -101,28 +101,51 @@ def update_self_user(user_id, role):
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    return jsonify(
-        {
+    return (
+        jsonify(
             {
-                "message": "User updated successfully",
-                "user updated": {
-                    "id": user.id,
-                    "username": user.username,
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email,
-                    "phone_number": user.phone_number,
-                    "address": user.address,
-                    "user_bio": user.user_bio,
-                    "image": user.image,
-                    "created_at": user.created_at,
-                    "last_login_at": user.last_login_at,
-                    "role": user.role,
-                },
+                {
+                    "message": "User updated successfully",
+                    "user updated": {
+                        "id": user.id,
+                        "username": user.username,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                        "email": user.email,
+                        "phone_number": user.phone_number,
+                        "address": user.address,
+                        "user_bio": user.user_bio,
+                        "image": user.image,
+                        "created_at": user.created_at,
+                        "last_login_at": user.last_login_at,
+                        "role": user.role,
+                    },
+                }
             }
-        },
+        ),
         200,
     )
+
+
+# dinguerie ça
+@user_bp.route("/password", methods=["PUT"])
+@jwt_required
+def update_user_psw(user_id, role):
+    data = request.get_json()
+    result = update_psw_controller(user_id, data["new_psw"], data["old_psw"])
+
+    status_code = 200 if result["success"] else 400
+    return jsonify({"message": result["message"]}), status_code
+
+
+@user_bp.route("/deactivate", methods=["POST"])
+@jwt_required
+def deactivate_user(user_id, role):
+    result = deactivate_user_controller(user_id, role)
+
+    status_code = 204 if result["success"] else 400
+
+    return jsonify({"message": result["message"]}), status_code
 
 
 # --------------------admin--------------------

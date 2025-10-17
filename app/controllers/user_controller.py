@@ -65,28 +65,37 @@ def update_user_controller(user_id, data):
 def update_psw_controller(user_id, new_psw, old_psw):
     user = User.query.get(user_id)
     if not user:
-        return None
+        return {"success": False, "message": "User not found"}
+
     if not check_password_hash(user.password, old_psw):
-        return None
+        return {"success": False, "message": "Old password is incorrect"}
+
+    if check_password_hash(user.password, new_psw):
+        return {"success": False, "message": "You cannot reuse the old password"}
+
     try:
         user.password = generate_password_hash(new_psw)
         db.session.commit()
-        return True
+        return {"success": True, "message": "Password updated successfully"}
     except Exception as e:
         db.session.rollback()
-        return {"error": f"Database error {str(e)}"}
+        return {"success": False, "message": f"Database error {str(e)}"}
 
 
 def deactivate_user_controller(user_id, role):
     user_to_deactivate = User.query.get(user_id)
     if not user_to_deactivate:
-        return None
+        return {"success": False, "message": "User not found"}
     if not user_to_deactivate.is_active:
-        return None
+        return {"success": False, "message": "Account already deactivated"}
     if role == "admin" or user_id == user_to_deactivate.id:
         user_to_deactivate.is_active = False
         db.session.commit()
-        return user_to_deactivate
+        return {
+            "success": True,
+            "message": "Password updated successfully",
+            "user": user_to_deactivate,
+        }
 
 
 def reactivate_user_controller(user_id, role):
